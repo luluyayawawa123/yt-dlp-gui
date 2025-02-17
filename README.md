@@ -19,6 +19,13 @@
    
    # 安装核心依赖
    brew install yt-dlp ffmpeg
+   
+   # 验证安装
+   # 检查 yt-dlp 是否安装成功（应显示版本号）
+   yt-dlp --version
+   
+   # 检查 ffmpeg 是否安装成功（应显示版本号）
+   ffmpeg -version | head -n 1
    ```
 
 2. 获取最新稳定版：
