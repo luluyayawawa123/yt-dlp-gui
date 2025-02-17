@@ -6,9 +6,9 @@
 
 - macOS 10.15 或更高版本
 - 支持 Intel 和 Apple Silicon (M 系列) Mac
-- 已通过 Homebrew 安装以下依赖：
-  - [yt-dlp](https://github.com/yt-dlp/yt-dlp): 视频下载核心
-  - [ffmpeg](https://ffmpeg.org/): 音视频处理工具
+- 通过 Homebrew 安装的以下依赖：
+  - yt-dlp: 视频下载核心
+  - ffmpeg: 音视频处理工具
 
 ## 安装步骤
 
