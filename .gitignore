@@ -1,0 +1,36 @@
+# Python 开发相关
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 构建产物
+build/
+dist/
+*.spec
+
+# 编辑器配置
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 日志文件
+*.log
+
+# 虚拟环境
+venv/
+env/
+
+# macOS 应用包
+*.app/
+*.dmg
+
+# 用户配置（如果有）
+config.json 
