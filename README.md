@@ -4,7 +4,10 @@ YT-DLP GUI 是一款简单易用的 YouTube 视频下载工具，为命令行工
 
 ## 软件截图
 
-### 基础模式
+### 基础模式-1
+![基础模式界面](screenshots/main-0.png)
+
+### 基础模式-2
 ![基础模式界面](screenshots/main.png)
 
 ## 核心功能
