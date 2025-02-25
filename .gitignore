@@ -33,4 +33,20 @@ env/
 *.dmg
 
 # 用户配置（如果有）
-config.json 
+config.json
+
+# 临时文件
+*.tmp
+*.bak
+*.backup
+
+# Python 缓存目录
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 本地测试文件
+test_*.py
+
+# 可能的依赖管理文件
+Pipfile.lock 

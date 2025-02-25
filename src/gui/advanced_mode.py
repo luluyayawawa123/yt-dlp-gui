@@ -7,6 +7,7 @@ from core.downloader import Downloader
 import sys
 import datetime
 from PyQt6.QtWidgets import QApplication
+from .styles import *  # 导入样式
 
 # 添加分析线程类
 class AnalyzeThread(QThread):
@@ -46,37 +47,62 @@ class AdvancedModeWidget(QWidget):
         self.analyze_thread = None  # 添加线程引用
         
         self.init_ui()
-        
+
     def init_ui(self):
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(10)
         
         # 添加顶部按钮栏
         top_button_layout = QHBoxLayout()
         self.back_button = QPushButton("返回基础模式")
+        self.back_button.setStyleSheet(BUTTON_STYLE)
         self.back_button.clicked.connect(self.switch_to_basic_mode)
         top_button_layout.addWidget(self.back_button)
-        top_button_layout.addStretch()  # 添加弹性空间
+        top_button_layout.addStretch()
         layout.addLayout(top_button_layout)
         
         # URL输入区域
-        url_layout = QHBoxLayout()
+        url_layout = QVBoxLayout()
         url_label = QLabel("视频URL:")
+        url_label.setStyleSheet(LABEL_STYLE)
         self.url_input = QLineEdit()
+        self.url_input.setStyleSheet(INPUT_STYLE)
         url_layout.addWidget(url_label)
         url_layout.addWidget(self.url_input)
         layout.addLayout(url_layout)
         
         # 分析按钮
         self.analyze_button = QPushButton("分析视频格式")
+        self.analyze_button.setStyleSheet(BUTTON_STYLE)
         self.analyze_button.clicked.connect(self.analyze_video)
         layout.addWidget(self.analyze_button)
+        
+        # 添加分析提示标签
+        self.analyze_tip = QLabel("")
+        self.analyze_tip.setStyleSheet(TIP_STYLE)
+        self.analyze_tip.hide()
+        layout.addWidget(self.analyze_tip)
+        
+        # 格式显示区域
+        self.format_display = QTextEdit()
+        self.format_display.setStyleSheet(INPUT_STYLE)
+        self.format_display.setReadOnly(True)
+        self.format_display.setFont(QFont("Courier New", 11))
+        self.format_display.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)  # 禁用自动换行
+        self.format_display.setMinimumHeight(240)  # 增加显示区域高度
+        layout.addWidget(self.format_display)
         
         # 格式ID输入
         format_layout = QHBoxLayout()
         video_label = QLabel("视频格式ID:")
+        video_label.setStyleSheet(LABEL_STYLE)
         self.video_format = QLineEdit()
+        self.video_format.setStyleSheet(INPUT_STYLE)
         audio_label = QLabel("音频格式ID:")
+        audio_label.setStyleSheet(LABEL_STYLE)
         self.audio_format = QLineEdit()
+        self.audio_format.setStyleSheet(INPUT_STYLE)
         format_layout.addWidget(video_label)
         format_layout.addWidget(self.video_format)
         format_layout.addWidget(audio_label)
@@ -86,7 +112,9 @@ class AdvancedModeWidget(QWidget):
         # 浏览器选择
         browser_layout = QHBoxLayout()
         browser_label = QLabel("使用浏览器 Cookies:")
+        browser_label.setStyleSheet(LABEL_STYLE)
         self.browser_combo = QComboBox()
+        self.browser_combo.setStyleSheet(INPUT_STYLE)
         
         # 添加浏览器选项
         if sys.platform == 'darwin':
@@ -117,46 +145,28 @@ class AdvancedModeWidget(QWidget):
         
         # 提示信息
         browser_tip = QLabel("提示：请确保已在选择的浏览器中登录过 YouTube")
-        browser_tip.setStyleSheet("color: gray; font-size: 12px;")
+        browser_tip.setStyleSheet(TIP_STYLE)
         layout.addWidget(browser_tip)
         
-        # 修改下载按钮
+        # 下载按钮
         button_layout = QHBoxLayout()
         self.download_button = QPushButton("开始下载")
+        self.download_button.setStyleSheet(BUTTON_STYLE)
         self.download_button.clicked.connect(self.start_download)
         button_layout.addWidget(self.download_button)
         layout.addLayout(button_layout)
         
-        # 添加分析提示标签
-        self.analyze_tip = QLabel("")
-        self.analyze_tip.setStyleSheet("color: #666; font-style: italic;")
-        self.analyze_tip.hide()  # 初始隐藏
-        layout.addWidget(self.analyze_tip)
-        
-        # 修改格式显示区域
-        self.format_display = QTextEdit()
-        self.format_display.setReadOnly(True)
-        # 使用等宽字体
-        self.format_display.setFont(QFont("Courier New", 12))
-        # 保持空格和制表符
-        self.format_display.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
-        
-        layout.addWidget(self.format_display)
-        
-        # 添加下载进度显示区域
+        # 下载进度显示区域
         self.scroll_area = QScrollArea()
+        self.scroll_area.setStyleSheet(TASK_SCROLL_AREA_STYLE)
         self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        self.scroll_area.setMinimumHeight(100)
-        self.scroll_area.setMaximumHeight(200)
-        
         progress_area = QWidget()
+        progress_area.setStyleSheet(TASK_CONTAINER_STYLE)
         self.progress_layout = QVBoxLayout(progress_area)
         self.progress_layout.setSpacing(5)
         self.scroll_area.setWidget(progress_area)
         layout.addWidget(self.scroll_area)
-        
+
     def analyze_video(self):
         url = self.url_input.text().strip()
         if not url:

@@ -14,6 +14,7 @@ class Downloader(QObject):
         super().__init__()
         self.processes = []
         self.task_count = 0  # 只保留这些基本属性
+        self.download_paths = {}  # 存储每个任务的下载路径
         
         # 设置 M1 Mac 的 Homebrew 路径
         if "/opt/homebrew/bin" not in os.environ.get('PATH', ''):
@@ -100,6 +101,10 @@ class Downloader(QObject):
             print("执行命令:", "yt-dlp", args)
             process.start("yt-dlp", args)
             self.processes.append(process)
+            
+            # 保存下载路径
+            self.download_paths[task_id] = output_path
+            
             return True
             
         except Exception as e:
@@ -245,3 +250,7 @@ class Downloader(QObject):
             return f"下载进度: {progress} (大小: {size}, 速度: {speed}, 剩余时间: {eta})"
         except:
             return data.strip() 
+
+    def get_current_download_path(self, task_id):
+        """获取指定任务的下载路径"""
+        return self.download_paths.get(task_id, os.path.expanduser("~/Downloads")) 

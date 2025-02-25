@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout,
                             QHBoxLayout, QLineEdit, QPushButton, 
                             QTextEdit, QFileDialog, QLabel, QComboBox,
                             QProgressBar, QSizePolicy, QFrame, QMessageBox,
-                            QScrollArea, QMenu)
+                            QScrollArea, QMenu, QStyle)
 from PyQt6.QtCore import Qt, QProcess
 from PyQt6.QtGui import QTextCursor
 import os
@@ -12,12 +12,15 @@ from core.config import Config
 from gui.advanced_mode import AdvancedModeWidget
 import sys
 from PyQt6.QtWidgets import QApplication
+from .styles import *  # 导入样式
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("YT-DLP GUI")
-        self.setMinimumSize(800, 740)  # 增加 60 像素高度
+        self.setMinimumSize(800, 752)  # 增加 60 像素高度
+        # 设置窗口背景色
+        self.setStyleSheet(f"background-color: {COLORS['background']};")
         
         # 创建一个永久的中央部件
         self.main_container = QWidget()
@@ -92,6 +95,10 @@ class MainWindow(QMainWindow):
             self.main_layout.addWidget(self.current_mode_widget)
             self.layout = QVBoxLayout(self.current_mode_widget)
             
+            # 设置整体边距和间距
+            self.layout.setContentsMargins(20, 20, 20, 20)
+            self.layout.setSpacing(10)  # 减小整体间距
+            
             # 初始化新UI
             self.init_ui()
             
@@ -130,11 +137,13 @@ class MainWindow(QMainWindow):
         
     def init_ui(self):
         # URL输入区域
-        url_layout = QVBoxLayout()  # 改为垂直布局
+        url_layout = QVBoxLayout()
         url_label = QLabel("视频URLs (每行一个):")
-        self.url_input = QTextEdit()  # 改为 QTextEdit
+        url_label.setStyleSheet(LABEL_STYLE)
+        self.url_input = QTextEdit()
+        self.url_input.setStyleSheet(INPUT_STYLE)
         self.url_input.setPlaceholderText("在此输入一个或多个YouTube视频链接，每行一个")
-        self.url_input.setMinimumHeight(100)  # 设置最小高度
+        self.url_input.setMinimumHeight(100)
         url_layout.addWidget(url_label)
         url_layout.addWidget(self.url_input)
         self.layout.addLayout(url_layout)
@@ -142,9 +151,12 @@ class MainWindow(QMainWindow):
         # 下载路径选择区域
         path_layout = QHBoxLayout()
         path_label = QLabel("下载位置:")
+        path_label.setStyleSheet(LABEL_STYLE)
         self.path_input = QLineEdit()
+        self.path_input.setStyleSheet(INPUT_STYLE)
         self.path_input.setText(os.path.expanduser("~/Downloads"))
         self.browse_button = QPushButton("浏览...")
+        self.browse_button.setStyleSheet(BROWSE_BUTTON_STYLE)
         self.browse_button.clicked.connect(self.browse_directory)
         path_layout.addWidget(path_label)
         path_layout.addWidget(self.path_input)
@@ -154,7 +166,9 @@ class MainWindow(QMainWindow):
         # 添加浏览器选择
         browser_layout = QHBoxLayout()
         browser_label = QLabel("使用浏览器 Cookies:")
+        browser_label.setStyleSheet(LABEL_STYLE)
         self.browser_combo = QComboBox()
+        self.browser_combo.setStyleSheet(INPUT_STYLE)
         
         # 在 macOS 上添加支持的浏览器
         if sys.platform == 'darwin':  # macOS
@@ -181,7 +195,7 @@ class MainWindow(QMainWindow):
                 
         # 添加提示信息
         browser_tip = QLabel("提示：请确保已在选择的浏览器中登录过 YouTube")
-        browser_tip.setStyleSheet("color: gray; font-size: 12px;")
+        browser_tip.setStyleSheet(TIP_STYLE)
         
         browser_layout.addWidget(browser_label)
         browser_layout.addWidget(self.browser_combo)
@@ -194,34 +208,42 @@ class MainWindow(QMainWindow):
         # 控制按钮区域
         button_layout = QHBoxLayout()
         self.download_button = QPushButton("开始下载")
+        self.download_button.setStyleSheet(BUTTON_STYLE)
         self.download_button.clicked.connect(self.start_download)
+        
         self.advanced_button = QPushButton("高级模式")
+        self.advanced_button.setStyleSheet(BUTTON_STYLE)
         self.advanced_button.clicked.connect(self.toggle_advanced_mode)
+        
         button_layout.addWidget(self.download_button)
         button_layout.addWidget(self.advanced_button)
         self.layout.addLayout(button_layout)
         
         # 添加下载历史显示区域
         history_header = QHBoxLayout()
-        history_label = QLabel("下载历史:")
-        clear_history_button = QPushButton("清空")
-        clear_history_button.setFixedWidth(60)  # 设置按钮宽度
-        clear_history_button.clicked.connect(self.clear_download_history)
+        history_header.setContentsMargins(12, 6, 12, 0)  # 添加左边距，与下载任务标题对齐
+        history_label = QLabel("下载历史")
+        history_label.setStyleSheet(LABEL_STYLE)
         history_header.addWidget(history_label)
         history_header.addStretch()
+        
+        clear_history_button = QPushButton("清空")
+        clear_history_button.setStyleSheet(CLEAR_BUTTON_STYLE)
+        clear_history_button.clicked.connect(self.clear_download_history)
         history_header.addWidget(clear_history_button)
         self.layout.addLayout(history_header)
         
         self.history_area = QScrollArea()
+        self.history_area.setStyleSheet(HISTORY_AREA_STYLE)
         self.history_area.setWidgetResizable(True)
         self.history_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.history_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        self.history_area.setMinimumHeight(100)
-        self.history_area.setMaximumHeight(200)
+        self.history_area.setFixedHeight(104)  # 增加4px高度
         
         history_widget = QWidget()
         self.history_layout = QVBoxLayout(history_widget)
-        self.history_layout.setSpacing(5)
+        self.history_layout.setSpacing(1)  # 进一步减小历史项间距
+        self.history_layout.setContentsMargins(4, 4, 4, 4)  # 减小内边距
         self.history_area.setWidget(history_widget)
         self.layout.addWidget(self.history_area)
         
@@ -245,41 +267,71 @@ class MainWindow(QMainWindow):
         
         for entry in reversed(history):
             item = QWidget()
+            item.setObjectName("historyItem")
+            item.setStyleSheet(HISTORY_ITEM_STYLE)
             layout = QHBoxLayout(item)
-            layout.setContentsMargins(5, 2, 5, 2)
+            layout.setContentsMargins(6, 2, 6, 2)
             
-            title = entry['title']
-            path = entry['path']
-            time = datetime.datetime.fromisoformat(entry['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
-            status = entry.get('status', '完成')  # 添加状态信息
+            # 创建可点击的标题标签
+            title_label = QPushButton(entry['title'])
+            title_label.setStyleSheet("""
+                QPushButton {
+                    text-align: left;
+                    border: none;
+                    background: transparent;
+                    color: #333333;
+                }
+                QPushButton:hover {
+                    color: #666666;
+                    text-decoration: underline;
+                }
+            """)
+            title_label.setCursor(Qt.CursorShape.PointingHandCursor)
+            title_label.setToolTip("点击打开文件位置")
+            # 添加右键菜单支持
+            title_label.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+            title_label.customContextMenuRequested.connect(
+                lambda pos, p=entry['path'], t=entry['title']: self.show_file_context_menu(pos, p, t)
+            )
+
+            # 连接左键点击事件
+            def create_callback(path, title):
+                return lambda: self.open_file_location(path, title)
+            title_label.clicked.connect(create_callback(entry['path'], entry['title']))
             
-            # 设置小字体
-            font = self.font()
-            font.setPointSize(11)  # 设置字体大小
+            # 时间
+            timestamp = datetime.datetime.fromisoformat(entry['timestamp']).astimezone()
+            current_time = datetime.datetime.now().astimezone()
             
-            title_label = QLabel(f"{title}")
-            title_label.setFont(font)
+            if timestamp.date() == current_time.date():
+                time_str = timestamp.strftime("今天 %H:%M")
+            elif timestamp.date() == current_time.date() - datetime.timedelta(days=1):
+                time_str = timestamp.strftime("昨天 %H:%M")
+            else:
+                time_str = timestamp.strftime("%m-%d %H:%M")
+            time_label = QLabel(time_str)
+            time_label.setStyleSheet("color: #666666;")
+            time_label.setFixedWidth(100)  # 固定时间标签宽度
+            time_label.setAlignment(Qt.AlignmentFlag.AlignRight)  # 右对齐
             
-            status_label = QLabel(f"[{status}]")
-            status_label.setFont(font)
-            status_label.setFixedWidth(60)  # 只固定状态标签宽度
+            # 状态
+            status_label = QLabel(entry['status'])
+            status_style = """
+                color: #32CD32;  /* 成功状态的颜色 */
+                padding: 2px 8px;
+                border-radius: 2px;
+            """
+            if entry['status'] == '已取消':
+                status_style = status_style.replace('#32CD32', '#999999')
+            elif entry['status'] == '已存在':
+                status_style = status_style.replace('#32CD32', '#FFA500')
+            status_label.setStyleSheet(status_style)
+            status_label.setFixedWidth(60)  # 固定状态标签宽度
+            status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # 居中对齐
             
-            time_label = QLabel(time)
-            time_label.setFont(font)
-            time_label.setFixedWidth(140)  # 固定时间标签宽度
-            time_label.setAlignment(Qt.AlignmentFlag.AlignRight)  # 时间右对齐
-            
-            # 设置状态标签的颜色
-            if status == '完成':
-                status_label.setStyleSheet("color: #32CD32;")
-            elif status == '失败':
-                status_label.setStyleSheet("color: #FF0000;")
-            elif status == '已存在':
-                status_label.setStyleSheet("color: #FFA500;")
-            
-            layout.addWidget(title_label)
-            layout.addWidget(status_label)
+            layout.addWidget(title_label, stretch=2)
             layout.addWidget(time_label)
+            layout.addWidget(status_label)
             
             self.history_layout.addWidget(item)
         
@@ -322,9 +374,11 @@ class MainWindow(QMainWindow):
     def create_download_progress_widget(self, task_id, url):
         """为下载任务创建进度显示组件"""
         task_widget = QWidget()
+        task_widget.setObjectName("taskItem")
+        task_widget.setStyleSheet(TASK_ITEM_STYLE)
         layout = QVBoxLayout(task_widget)
-        layout.setSpacing(2)  # 减小垂直间距
-        layout.setContentsMargins(5, 5, 5, 5)  # 减小边距
+        layout.setSpacing(1)
+        layout.setContentsMargins(8, 4, 8, 4)
         
         # 设置小字体
         font = self.font()
@@ -352,20 +406,11 @@ class MainWindow(QMainWindow):
         progress_layout.setSpacing(5)
         
         progress_bar = QProgressBar()
+        progress_bar.setStyleSheet(PROGRESS_BAR_STYLE)
         progress_bar.setMinimum(0)
         progress_bar.setMaximum(100)
-        progress_bar.setTextVisible(True)
-        progress_bar.setFixedHeight(10)  # 保持进度条高度一致
-        progress_bar.setStyleSheet("""
-            QProgressBar {
-                border: none;
-                background-color: #f0f0f0;
-                text-align: center;
-            }
-            QProgressBar::chunk {
-                background-color: #666666;
-            }
-        """)
+        progress_bar.setTextVisible(False)  # 隐藏进度条文字
+        progress_bar.setFixedHeight(2)  # 更细的进度条
         
         status_label = QLabel("准备下载...")
         status_label.setFont(font)
@@ -374,14 +419,6 @@ class MainWindow(QMainWindow):
         progress_layout.addWidget(progress_bar, stretch=2)
         progress_layout.addWidget(status_label, stretch=1)
         layout.addLayout(progress_layout)
-        
-        # 添加分隔线
-        separator = QFrame()
-        separator.setFrameShape(QFrame.Shape.HLine)
-        separator.setFrameShadow(QFrame.Shadow.Sunken)
-        separator.setStyleSheet("background-color: #ddd;")
-        separator.setFixedHeight(1)
-        layout.addWidget(separator)
         
         # 存储任务信息
         self.download_tasks[task_id] = {
@@ -429,41 +466,79 @@ class MainWindow(QMainWindow):
             self.completed_urls = 0
             self.download_tasks.clear()
             
-            # 安全地清理旧的滚动区域
+            # 安全地清理旧的滚动区域和任务区域
             try:
+                # 清理旧的滚动区域
                 if hasattr(self, 'scroll_area') and self.scroll_area:
                     self.scroll_area.setParent(None)
                     self.scroll_area.deleteLater()
-                    QApplication.processEvents()  # 等待删除完成
+                
+                # 清理旧的任务标题和容器
+                for item in self.findChildren(QWidget):
+                    if item.objectName() in ["taskHeader", "borderContainer"]:
+                        item.setParent(None)
+                        item.deleteLater()
+                
+                # 重置标记，允许重新创建标题
+                self.task_header_added = False
+                
+                QApplication.processEvents()
             except:
                 pass
             
+            # 创建新的任务标题
+            task_header = QWidget()
+            task_header.setObjectName("taskHeader")
+            header_layout = QHBoxLayout(task_header)
+            header_layout.setContentsMargins(12, 6, 12, 0)
+            task_label = QLabel("下载任务")
+            task_label.setStyleSheet(LABEL_STYLE)
+            header_layout.addWidget(task_label)
+            header_layout.addStretch()
+            self.layout.addWidget(task_header)
+            
+            # 创建带边框的外层容器
+            border_container = QWidget()
+            border_container.setObjectName("borderContainer")
+            border_container.setStyleSheet(BORDER_CONTAINER_STYLE)
+            border_layout = QVBoxLayout(border_container)
+            border_layout.setContentsMargins(2, 2, 2, 2)
+            border_layout.setSpacing(0)
+            
             # 创建新的滚动区域
-            self.scroll_area = QScrollArea(self.current_mode_widget)  # 指定父部件
+            self.scroll_area = QScrollArea()
+            self.scroll_area.setStyleSheet(TASK_SCROLL_AREA_STYLE)
             self.scroll_area.setWidgetResizable(True)
             self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
             self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-            self.scroll_area.setMinimumHeight(200)
-            self.scroll_area.setMaximumHeight(400)
             
-            # 创建任务显示区域
-            progress_area = QWidget(self.scroll_area)  # 指定父部件
-            progress_layout = QVBoxLayout(progress_area)
-            progress_layout.setSpacing(5)
+            # 创建任务容器
+            task_container = QWidget()
+            task_container.setObjectName("taskArea")
+            task_container.setStyleSheet(TASK_CONTAINER_STYLE)
+            task_container_layout = QVBoxLayout(task_container)
+            task_container_layout.setContentsMargins(4, 4, 4, 8)  # 增加底部边距
+            task_container_layout.setSpacing(2)  # 设置任务之间的间距
             
             # 创建所有下载任务的显示
             for i, url in enumerate(urls, 1):
                 task_id = f"Task-{i}"
                 task_widget = self.create_download_progress_widget(task_id, url)
-                progress_layout.addWidget(task_widget)
+                task_container_layout.addWidget(task_widget)
             
-            progress_layout.addStretch()
-            self.scroll_area.setWidget(progress_area)
+            # 添加底部空白widget作为缓冲
+            spacer = QWidget()
+            spacer.setFixedHeight(4)
+            task_container_layout.addWidget(spacer)
             
-            # 安全地添加到布局
-            if hasattr(self, 'layout') and self.layout:
-                self.layout.addWidget(self.scroll_area)
-                QApplication.processEvents()  # 确保UI更新
+            # 设置滚动区域的内容
+            self.scroll_area.setWidget(task_container)
+            
+            # 将滚动区域添加到边框容器
+            border_layout.addWidget(self.scroll_area)
+            
+            # 将边框容器添加到主布局
+            self.layout.addWidget(border_container)
             
             # 开始所有下载
             browser = self.browser_combo.currentData()
@@ -575,7 +650,7 @@ class MainWindow(QMainWindow):
             
             self.config.config['download_history'].append({
                 'title': title,
-                'path': self.path_input.text(),
+                'path': self.downloader.get_current_download_path(task_id),  # 使用实际的下载路径
                 'timestamp': datetime.datetime.now().isoformat(),
                 'status': status
             })
@@ -683,17 +758,9 @@ class MainWindow(QMainWindow):
 
     def clear_download_history(self):
         """清空下载历史"""
-        reply = QMessageBox.question(
-            self,
-            "确认清空",
-            "确定要清空所有下载历史记录吗？",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-        )
-        
-        if reply == QMessageBox.StandardButton.Yes:
-            self.config.config['download_history'] = []
-            self.config.save_config()
-            self.update_history_display()
+        self.config.config['download_history'] = []
+        self.config.save_config()
+        self.update_history_display()
 
     def show_history_context_menu(self, position):
         """显示历史记录的右键菜单"""
@@ -718,4 +785,97 @@ class MainWindow(QMainWindow):
                 "2. 进入隐私与安全性 > 完全磁盘访问权限\n"
                 "3. 点击+号添加 YT-DLP GUI\n"
                 "4. 重启应用"
-            ) 
+            )
+
+    def open_file_location(self, path, title):
+        """打开文件所在位置"""
+        try:
+            # 构建完整的文件路径
+            import glob
+            # 获取目录下所有文件
+            all_files = glob.glob(os.path.join(path, "*"))
+            video_extensions = ['.mp4', '.mkv', '.webm', '.avi', '.mov']
+            
+            # 查找匹配的视频文件
+            video_files = []
+            for file in all_files:
+                # 检查扩展名
+                if os.path.splitext(file)[1].lower() in video_extensions:
+                    # 获取文件名（不含扩展名）
+                    file_name = os.path.splitext(os.path.basename(file))[0]
+                    # 如果文件名包含标题的主要部分，就认为是匹配的
+                    if title.split('[')[0].strip() in file_name:
+                        video_files.append(file)
+            
+            file_path = video_files[0] if video_files else None
+            
+            if file_path:
+                # 如果找到文件，打开其所在文件夹并选中该文件
+                os.system(f'open -R "{file_path}"')
+            else:
+                # 如果没找到文件，只打开文件夹
+                os.system(f'open "{path}"')
+        except Exception as e:
+            QMessageBox.warning(self, "打开失败", f"无法打开文件位置：{str(e)}")
+
+    def show_file_context_menu(self, pos, path, title):
+        """显示文件右键菜单"""
+        menu = QMenu(self)
+        menu.setStyleSheet("""
+            QMenu {
+                background-color: white;
+                border: 1px solid #E0E0E0;
+                border-radius: 6px;
+                padding: 4px 0px;
+            }
+            QMenu::item {
+                padding: 6px 24px;
+                color: #333333;
+                background: transparent;
+            }
+            QMenu::item:selected {
+                background: #F5F5F5;
+                color: #333333;
+            }
+            QMenu::item:hover {
+                background: #F5F5F5;
+                color: #333333;
+            }
+        """)
+        
+        # 设置鼠标样式
+        menu.setCursor(Qt.CursorShape.PointingHandCursor)
+        
+        # 查找可能的文件
+        import glob
+        # 获取目录下所有文件
+        all_files = glob.glob(os.path.join(path, "*"))
+        video_extensions = ['.mp4', '.mkv', '.webm', '.avi', '.mov']
+        
+        # 查找匹配的视频文件
+        video_files = []
+        for file in all_files:
+            # 检查扩展名
+            if os.path.splitext(file)[1].lower() in video_extensions:
+                # 获取文件名（不含扩展名）
+                file_name = os.path.splitext(os.path.basename(file))[0]
+                # 如果文件名包含标题的主要部分，就认为是匹配的
+                if title.split('[')[0].strip() in file_name:
+                    video_files.append(file)
+        
+        file_path = video_files[0] if video_files else None
+        
+        if file_path:
+            # 打开视频
+            open_action = menu.addAction("打开视频")
+            open_action.triggered.connect(lambda: os.system(f'open "{file_path}"'))
+            
+            # 在文件夹中显示
+            show_action = menu.addAction("在文件夹中显示")
+            show_action.triggered.connect(lambda: os.system(f'open -R "{file_path}"'))
+        else:
+            # 如果找不到文件，只显示打开文件夹选项
+            show_action = menu.addAction("打开下载文件夹")
+            show_action.triggered.connect(lambda: os.system(f'open "{path}"'))
+        
+        menu.exec(self.sender().mapToGlobal(pos)) 
