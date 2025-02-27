@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout,
                             QHBoxLayout, QLineEdit, QPushButton, 
                             QTextEdit, QFileDialog, QLabel, QComboBox,
                             QProgressBar, QSizePolicy, QFrame, QMessageBox,
-                            QScrollArea, QMenu, QStyle)
+                            QScrollArea, QMenu, QStyle, QCheckBox)
 from PyQt6.QtCore import Qt, QProcess
 from PyQt6.QtGui import QTextCursor
 import os
@@ -138,13 +138,27 @@ class MainWindow(QMainWindow):
     def init_ui(self):
         # URL输入区域
         url_layout = QVBoxLayout()
-        url_label = QLabel("视频URLs (每行一个):")
+        url_label = QLabel("视频链接:")
         url_label.setStyleSheet(LABEL_STYLE)
+        
+        # 添加水平布局包含URL标签和播放列表选项
+        url_header_layout = QHBoxLayout()
+        url_header_layout.addWidget(url_label)
+        url_header_layout.addStretch()
+        
+        # 添加播放列表选项复选框
+        self.playlist_checkbox = QCheckBox()
+        self.playlist_checkbox.setText("播放列表/频道")  # 移除方块字符，只保留文本
+        self.playlist_checkbox.stateChanged.connect(self.update_checkbox_text)
+        url_header_layout.addWidget(self.playlist_checkbox)
+        
+        url_layout.addLayout(url_header_layout)
+        
         self.url_input = QTextEdit()
         self.url_input.setStyleSheet(INPUT_STYLE)
         self.url_input.setPlaceholderText("在此输入一个或多个YouTube视频链接，每行一个")
         self.url_input.setMinimumHeight(100)
-        url_layout.addWidget(url_label)
+        self.url_input.setAcceptRichText(False)
         url_layout.addWidget(self.url_input)
         self.layout.addLayout(url_layout)
         
@@ -163,13 +177,20 @@ class MainWindow(QMainWindow):
         path_layout.addWidget(self.browse_button)
         self.layout.addLayout(path_layout)
         
-        # 添加浏览器选择
+        # 浏览器和画质选择区域 - 更紧凑的布局
+        options_layout = QHBoxLayout()
+        options_layout.setContentsMargins(0, 0, 0, 0)  # 移除边距
+        
+        # 浏览器选择
         browser_layout = QHBoxLayout()
-        browser_label = QLabel("使用浏览器 Cookies:")
+        browser_layout.setSpacing(8)  # 设置标签和下拉框之间的间距
+        browser_label = QLabel("浏览器:")
         browser_label.setStyleSheet(LABEL_STYLE)
+        browser_label.setFixedWidth(45)  # 固定标签宽度
         self.browser_combo = QComboBox()
         self.browser_combo.setStyleSheet(INPUT_STYLE)
-        
+        self.browser_combo.setFixedWidth(100)  # 调整下拉框宽度
+
         # 在 macOS 上添加支持的浏览器
         if sys.platform == 'darwin':  # macOS
             browsers = [
@@ -182,28 +203,64 @@ class MainWindow(QMainWindow):
                 ('Edge', 'edge'),
                 ('Chrome', 'chrome'),
             ]
-            
+
         for browser_name, browser_id in browsers:
             self.browser_combo.addItem(browser_name, browser_id)
-            
+
         # 设置保存的浏览器选项
         saved_browser = self.config.config.get('browser')
         if saved_browser:
             index = self.browser_combo.findData(saved_browser)
             if index >= 0:
                 self.browser_combo.setCurrentIndex(index)
-                
-        # 添加提示信息
-        browser_tip = QLabel("提示：请确保已在选择的浏览器中登录过 YouTube")
-        browser_tip.setStyleSheet(TIP_STYLE)
-        
+
+        # 画质选择
+        quality_layout = QHBoxLayout()
+        quality_layout.setSpacing(8)  # 设置标签和下拉框之间的间距
+        quality_label = QLabel("画质")
+        quality_label.setStyleSheet(LABEL_STYLE)
+        quality_label.setFixedWidth(35)  # 固定标签宽度
+        self.quality_combo = QComboBox()
+        self.quality_combo.setStyleSheet(INPUT_STYLE)
+        self.quality_combo.setFixedWidth(120)  # 调整下拉框宽度
+        self.quality_combo.addItem("最高画质", None)
+        self.quality_combo.addItem("4K", "2160")
+        self.quality_combo.addItem("1080P", "1080")
+        self.quality_combo.addItem("480P", "480")
+        self.quality_combo.addItem("仅MP3音频", "mp3")
+
+        # 组合布局
         browser_layout.addWidget(browser_label)
         browser_layout.addWidget(self.browser_combo)
-        self.layout.addLayout(browser_layout)
-        self.layout.addWidget(browser_tip)
+        quality_layout.addWidget(quality_label)
+        quality_layout.addWidget(self.quality_combo)
+
+        # 添加字幕选项复选框 - 移到画质选择的右边
+        self.subtitle_checkbox = QCheckBox()
+        self.subtitle_checkbox.setText("下载字幕")
+        self.subtitle_checkbox.setStyleSheet("""
+            QCheckBox {
+                color: #333333;  /* 与 LABEL_STYLE 相同的颜色 */
+                padding: 0px 2px;  /* 与 LABEL_STYLE 相同的内边距 */
+            }
+        """)
+        self.subtitle_checkbox.setToolTip("下载视频内置的所有非自动生成字幕(格式:SRT)\n不包含自动生成的字幕")
+        self.subtitle_checkbox.stateChanged.connect(self.update_subtitle_checkbox_text)
         
-        # 保存浏览器选择
-        self.browser_combo.currentIndexChanged.connect(self.save_browser_setting)
+        # 调整布局和间距
+        options_layout.addLayout(browser_layout)
+        options_layout.addSpacing(20)  # 浏览器和画质之间的间距
+        options_layout.addLayout(quality_layout)
+        options_layout.addSpacing(20)  # 画质和字幕之间的间距
+        options_layout.addWidget(self.subtitle_checkbox)
+        options_layout.addStretch()  # 将选项推到左侧
+
+        self.layout.addLayout(options_layout)
+        
+        # 添加提示信息（移动到选项下方）
+        browser_tip = QLabel("提示：请确保已在选择的浏览器中登录过 YouTube")
+        browser_tip.setStyleSheet(TIP_STYLE)
+        self.layout.addWidget(browser_tip)
         
         # 控制按钮区域
         button_layout = QHBoxLayout()
@@ -270,24 +327,48 @@ class MainWindow(QMainWindow):
             item.setObjectName("historyItem")
             item.setStyleSheet(HISTORY_ITEM_STYLE)
             layout = QHBoxLayout(item)
-            layout.setContentsMargins(6, 2, 6, 2)
+            layout.setContentsMargins(6, 1, 6, 1)  # 减小上下边距
+            
+            # 处理标题，检查是否是播放列表
+            full_title = entry['title']
+            is_playlist = "(列表" in full_title
+            
+            # 截断过长的标题
+            truncated_title = full_title
+            if len(full_title) > 35:  # 限制标题长度为35个字符
+                truncated_title = full_title[:33] + "..."
             
             # 创建可点击的标题标签
-            title_label = QPushButton(entry['title'])
-            title_label.setStyleSheet("""
+            title_label = QPushButton(truncated_title)
+            
+            # 为播放列表和单个视频设置相似的样式，只保留细微区别
+            base_style = """
                 QPushButton {
                     text-align: left;
                     border: none;
                     background: transparent;
                     color: #333333;
+                    font-size: 12px;  /* 从 11px 改为 12px */
+                    padding: 1px 2px;
                 }
                 QPushButton:hover {
                     color: #666666;
                     text-decoration: underline;
                 }
-            """)
+            """
+            
+            if is_playlist:
+                title_label.setStyleSheet(base_style + """
+                    QPushButton {
+                        font-style: italic;
+                    }
+                """)
+            else:
+                title_label.setStyleSheet(base_style)
+            
             title_label.setCursor(Qt.CursorShape.PointingHandCursor)
-            title_label.setToolTip("点击打开文件位置")
+            title_label.setToolTip(full_title)  # 设置完整标题为工具提示
+            
             # 添加右键菜单支持
             title_label.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
             title_label.customContextMenuRequested.connect(
@@ -309,25 +390,31 @@ class MainWindow(QMainWindow):
                 time_str = timestamp.strftime("昨天 %H:%M")
             else:
                 time_str = timestamp.strftime("%m-%d %H:%M")
-            time_label = QLabel(time_str)
-            time_label.setStyleSheet("color: #666666;")
-            time_label.setFixedWidth(100)  # 固定时间标签宽度
-            time_label.setAlignment(Qt.AlignmentFlag.AlignRight)  # 右对齐
             
-            # 状态
+            time_label = QLabel(time_str)
+            time_label.setStyleSheet("""
+                color: #666666;
+                font-size: 12px;  /* 从 11px 改为 12px */
+                padding: 1px 2px;
+            """)
+            time_label.setFixedWidth(90)  # 稍微减小宽度
+            time_label.setAlignment(Qt.AlignmentFlag.AlignRight)
+            
+            # 状态标签样式
             status_label = QLabel(entry['status'])
             status_style = """
-                color: #32CD32;  /* 成功状态的颜色 */
-                padding: 2px 8px;
+                color: #32CD32;
+                padding: 1px 6px;
                 border-radius: 2px;
+                font-size: 12px;  /* 从 11px 改为 12px */
             """
             if entry['status'] == '已取消':
                 status_style = status_style.replace('#32CD32', '#999999')
             elif entry['status'] == '已存在':
                 status_style = status_style.replace('#32CD32', '#FFA500')
             status_label.setStyleSheet(status_style)
-            status_label.setFixedWidth(60)  # 固定状态标签宽度
-            status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # 居中对齐
+            status_label.setFixedWidth(55)  # 稍微减小宽度
+            status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             
             layout.addWidget(title_label, stretch=2)
             layout.addWidget(time_label)
@@ -356,6 +443,11 @@ class MainWindow(QMainWindow):
             return any(domain in parsed.netloc for domain in valid_domains)
         except:
             return False
+
+    def is_playlist_url(self, url):
+        """检测 URL 是否为播放列表或频道"""
+        playlist_indicators = ['playlist?', '/c/', '/channel/', '/user/', '/watch?v=', '&list=']
+        return any(indicator in url for indicator in playlist_indicators)
 
     def validate_download_path(self, path):
         """验证下载目录是否有效且可写"""
@@ -387,17 +479,15 @@ class MainWindow(QMainWindow):
         # 任务信息
         info_layout = QHBoxLayout()
         info_layout.setSpacing(5)
+        info_layout.setContentsMargins(0, 0, 0, 0)  # 减少内边距
         
-        task_label = QLabel(f"任务 {task_id}:")
-        task_label.setFont(font)
-        task_label.setFixedWidth(60)
-        
-        title_label = QLabel("等待获取标题...")
+        # 移除任务标签，直接显示标题
+        title_label = QLabel("正在准备下载...")
         title_label.setFont(font)
         title_label.setWordWrap(True)
         title_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        title_label.setMinimumHeight(20)  # 确保有足够的高度
         
-        info_layout.addWidget(task_label)
         info_layout.addWidget(title_label, stretch=1)
         layout.addLayout(info_layout)
         
@@ -542,9 +632,24 @@ class MainWindow(QMainWindow):
             
             # 开始所有下载
             browser = self.browser_combo.currentData()
+            is_playlist = self.playlist_checkbox.isChecked()
+            
+            # 获取画质设置
+            quality = self.quality_combo.currentData()
+            format_options = {
+                'height': quality,
+                'download_subs': self.subtitle_checkbox.isChecked()  # 添加字幕选项状态
+            } if quality else {'download_subs': self.subtitle_checkbox.isChecked()}
+            
             for i, url in enumerate(urls, 1):
                 task_id = f"Task-{i}"
-                self.downloader.start_download(url, output_path, browser=browser)
+                self.downloader.start_download(
+                    url=url,
+                    output_path=output_path,
+                    format_options=format_options,  # 现在包含了字幕选项
+                    browser=browser,
+                    is_playlist=is_playlist
+                )
             
             # 禁用控件
             self._disable_controls()
@@ -569,9 +674,9 @@ class MainWindow(QMainWindow):
                         task['progress_bar'].setStyleSheet("QProgressBar::chunk { background-color: #999; }")
                         
                         # 添加到历史记录，安全地获取标题
-                        title = task.get('title_label', {}).text() if task.get('title_label') else "未知视频"
-                        if not title or title == "等待获取标题...":
-                            title = "未知视频"
+                        title = task.get('title_label', {}).text() if task.get('title_label') else "视频下载任务"
+                        if not title or title == "正在准备下载...":
+                            title = "视频下载任务"
                             
                         self.config.config['download_history'].append({
                             'title': title,
@@ -597,11 +702,153 @@ class MainWindow(QMainWindow):
             
         task = self.download_tasks[task_id]
         
-        # 更新视频标题
-        if "开始下载:" in text:
-            title = text.split(': ', 1)[1]
-            task['title_label'].setText(title)
+        # 处理播放列表信息
+        if "开始下载播放列表:" in text:
+            playlist_name = text.split(': ', 1)[1]
+            task['title_label'].setText(f"播放列表: {playlist_name}")
             task['status_label'].setText("准备下载...")
+            task['progress_bar'].setValue(0)  # 重置进度条
+            return
+            
+        # 播放列表项目进度
+        if "正在下载此列表中的第" in text and "共" in text:
+            try:
+                # 获取播放列表项目编号
+                parts = text.split("第")[1].split("个")
+                current_item = parts[0].strip()
+                total_items = parts[1].split("共")[1].strip().split("个")[0].strip()
+                
+                # 创建格式化消息，与新格式兼容
+                list_id = task_id.split('-')[1] if '-' in task_id else "1"
+                formatted_message = f"列表任务-{list_id}：正在下载第{current_item}个/共{total_items}个：正在获取视频信息..."
+                
+                # 使用新格式处理播放列表消息
+                return self.update_output(task_id, formatted_message)
+            except Exception as e:
+                print(f"处理旧格式播放列表消息时出错: {e}")
+                task['status_label'].setText(text)
+            return
+            
+        # 播放列表下载完成
+        if "播放列表下载完成:" in text:
+            playlist_name = text.split(': ', 1)[1]
+            task['status_label'].setText("下载完成")
+            task['progress_bar'].setValue(100)
+            return
+        
+        # 更新视频标题 - 新格式：列表任务-x：正在下载第y个/共z个：标题
+        if "列表任务-" in text and "正在下载第" in text:
+            try:
+                parts = text.split("：", 2)  # 分成3部分：任务号、进度信息、标题
+                task_info = parts[0]  # "列表任务-1"
+                progress_info = parts[1]  # "正在下载第x个/共y个"
+                
+                # 确保有标题部分，即使没有冒号分隔
+                if len(parts) > 2 and parts[2].strip():
+                    title = parts[2]  # 提取标题
+                else:
+                    title = "正在获取视频信息..."  # 默认标题
+                
+                # 清理标题中的视频ID和格式ID
+                cleaned_title = title
+                if '[' in cleaned_title and ']' in cleaned_title:
+                    cleaned_title = cleaned_title.split('[')[0].strip()
+                if '.f' in cleaned_title and any(c.isdigit() for c in cleaned_title.split('.f')[-1]):
+                    cleaned_title = cleaned_title.split('.f')[0].strip()
+                
+                # 确保标题不为空
+                if not cleaned_title.strip():
+                    cleaned_title = title  # 使用原始标题
+                if not cleaned_title.strip():
+                    cleaned_title = "正在获取视频信息..."  # 最后的保底方案
+                
+                # 检查是否包含"已存在"状态信息
+                if "已存在" in text:
+                    task['status_label'].setText("文件已存在，已跳过")
+                    task['progress_bar'].setValue(100)
+                    task['progress_bar'].setStyleSheet("QProgressBar::chunk { background-color: #FFA500; }")
+                else:
+                    task['status_label'].setText("准备下载...")
+                    task['progress_bar'].setValue(0)  # 重置进度条
+                    
+                # 设置标题格式为：列表任务-x：正在下载第y个/共z个：视频标题
+                # 检查标题长度并在必要时截断
+                full_title = f"{task_info}：{progress_info}：{cleaned_title}"
+                truncated_display = full_title
+                if len(cleaned_title) > 40:  # 限制标题长度
+                    truncated_display = f"{task_info}：{progress_info}：{cleaned_title[:38]}..."
+                task['title_label'].setText(truncated_display)
+                task['title_label'].setToolTip(full_title)  # 设置完整标题作为工具提示
+                
+                # 调试信息
+                print(f"设置播放列表任务标题: {task_info}：{progress_info}：{cleaned_title}")
+            except Exception as e:
+                print(f"处理播放列表消息时出错: {e}")
+                print(f"原始消息: {text}")
+            return
+        
+        # 处理单个视频 - 新格式：单视频任务-x：标题
+        if "单视频任务-" in text:
+            if "已存在" in text:
+                # 处理已存在的文件
+                parts = text.split("：", 1)  # 分成2部分：任务号、标题+状态
+                task_prefix = parts[0]
+                title = parts[1].split(" (")[0] if len(parts) > 1 else "未知视频"  # 提取标题
+                
+                # 清理标题中的视频ID和格式ID
+                if '[' in title and ']' in title:
+                    title = title.split('[')[0].strip()
+                if '.f' in title and any(c.isdigit() for c in title.split('.f')[-1]):
+                    title = title.split('.f')[0].strip()
+                    
+                # 检查标题长度并在必要时截断
+                if len(title) > 40:  # 限制标题长度
+                    title = title[:38] + "..."
+                task['title_label'].setText(f"{task_prefix}：{title}")  # 显示"单视频任务-x：清理后的标题"
+                task['title_label'].setToolTip(f"{task_prefix}：{title}")  # 添加完整标题作为工具提示
+                task['status_label'].setText("文件已存在，已跳过")
+                task['progress_bar'].setValue(100)
+                # 恢复进度条样式
+                task['progress_bar'].setStyleSheet("QProgressBar::chunk { background-color: #FFA500; }")
+            else:
+                # 正常下载
+                # 提取标题部分
+                parts = text.split('：', 1)
+                task_prefix = parts[0]
+                title = parts[1] if len(parts) > 1 else text
+                
+                # 清理标题中的视频ID和格式ID
+                if '[' in title and ']' in title:
+                    title = title.split('[')[0].strip()
+                if '.f' in title and any(c.isdigit() for c in title.split('.f')[-1]):
+                    title = title.split('.f')[0].strip()
+                    
+                # 准备完整标题和显示标题
+                full_title = f"{task_prefix}：{title}"
+                display_title = full_title
+                # 检查标题长度并在必要时截断
+                if len(title) > 40:  # 限制标题长度
+                    display_title = f"{task_prefix}：{title[:38]}..."
+                task['title_label'].setText(display_title)  # 显示"单视频任务-x：清理后的标题"
+                task['title_label'].setToolTip(full_title)  # 添加完整标题作为工具提示
+                task['status_label'].setText("准备下载...")
+                task['progress_bar'].setValue(0)  # 重置进度条
+            return
+        
+        # 保留旧代码以兼容性处理
+        if "开始下载:" in text:
+            if "(" in text and ")" in text and "/" in text.split("(")[1]:
+                # 播放列表项目
+                title_parts = text.split(': ', 1)[1]
+                title = title_parts.split(' (')[0]
+                progress = title_parts.split(' (')[1].rstrip(')')
+                task['title_label'].setText(f"{title}")
+                task['status_label'].setText(f"下载中 - {progress}")
+            else:
+                # 普通视频
+                title = text.split(': ', 1)[1]
+                task['title_label'].setText(title)
+                task['status_label'].setText("准备下载...")
             task['progress_bar'].setValue(0)  # 重置进度条
             return
             
@@ -611,14 +858,34 @@ class MainWindow(QMainWindow):
                 percent_text = text.split('%')[0].split(':')[1].strip()
                 progress = float(percent_text)
                 task['progress_bar'].setValue(int(progress))
-                task['status_label'].setText(text.split('(')[1].rstrip(')'))
+                
+                # 检查是否包含播放列表信息
+                if "- 正在下载第" in text and "共" in text:
+                    progress_info = text.split('(')[1].split(')')[0]
+                    task['status_label'].setText(f"{progress_info}")
+                elif "- 项目" in text and "/" in text.split("- 项目")[1]:
+                    # 兼容旧格式
+                    progress_info = text.split('(')[1].split(')')[0]
+                    item_info = text.split('- 项目')[1].strip()
+                    task['status_label'].setText(f"{progress_info} - 项目 {item_info}")
+                else:
+                    task['status_label'].setText(text.split('(')[1].rstrip(')'))
             except:
                 task['status_label'].setText(text)
-        elif "文件已存在:" in text:
-            title = text.split(': ', 1)[1]
-            task['title_label'].setText(title)
+        elif "文件已存在:" in text and not ("列表任务-" in text or "单视频任务-" in text):
+            if "(" in text and ")" in text and "/" in text.split("(")[1]:
+                # 播放列表项目
+                title_parts = text.split(': ', 1)[1]
+                title = title_parts.split(' (')[0]
+                progress = title_parts.split(' (')[1].rstrip(')')
+                task['title_label'].setText(f"{title}")
+                task['status_label'].setText(f"文件已存在 - {progress}")
+            else:
+                # 普通视频
+                title = text.split(': ', 1)[1]
+                task['title_label'].setText(title)
+                task['status_label'].setText("文件已存在，已跳过")
             task['progress_bar'].setValue(100)
-            task['status_label'].setText("文件已存在，已跳过")
             task['progress_bar'].setStyleSheet("QProgressBar::chunk { background-color: #FFA500; }")
         
     def download_finished(self, success, message, title, task_id):
@@ -627,7 +894,19 @@ class MainWindow(QMainWindow):
             
         task = self.download_tasks[task_id]
         
-        if success:
+        # 检查是否为取消状态
+        if message == "下载已取消":
+            task['status_label'].setText("已取消")
+            task['progress_bar'].setStyleSheet("QProgressBar::chunk { background-color: #999; }")
+            
+            # 添加到下载历史
+            self.config.config['download_history'].append({
+                'title': title,
+                'path': self.downloader.get_current_download_path(task_id),
+                'timestamp': datetime.datetime.now().isoformat(),
+                'status': '已取消'
+            })
+        elif success:
             task['progress_bar'].setValue(100)
             task['progress_bar'].setTextVisible(False)  # 完成后不显示百分比
             task['status_label'].setText("下载完成")
@@ -650,7 +929,7 @@ class MainWindow(QMainWindow):
             
             self.config.config['download_history'].append({
                 'title': title,
-                'path': self.downloader.get_current_download_path(task_id),  # 使用实际的下载路径
+                'path': self.downloader.get_current_download_path(task_id),
                 'timestamp': datetime.datetime.now().isoformat(),
                 'status': status
             })
@@ -878,4 +1157,16 @@ class MainWindow(QMainWindow):
             show_action = menu.addAction("打开下载文件夹")
             show_action.triggered.connect(lambda: os.system(f'open "{path}"'))
         
-        menu.exec(self.sender().mapToGlobal(pos)) 
+        menu.exec(self.sender().mapToGlobal(pos))
+
+    def update_checkbox_text(self, state):
+        if state == Qt.CheckState.Checked:
+            self.playlist_checkbox.setText("☑️ 播放列表/频道")
+        else:
+            self.playlist_checkbox.setText("播放列表/频道")  # 未选中时只显示文本 
+
+    def update_subtitle_checkbox_text(self, state):
+        if state == Qt.CheckState.Checked:
+            self.subtitle_checkbox.setText("☑️ 下载字幕")
+        else:
+            self.subtitle_checkbox.setText("下载字幕") 

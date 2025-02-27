@@ -1,11 +1,12 @@
 # 颜色主题
 COLORS = {
-    'primary': '#666666',      # 主色调
+    'background': '#F8F8F8',
+    'text': '#333333',
+    'primary': '#4CAF50',  # 更改为更柔和的绿色
+    'border': '#E0E0E0',
     'success': '#32CD32',      # 成功状态
     'warning': '#FFA500',      # 警告状态
     'error': '#FF0000',        # 错误状态
-    'background': '#FFFFFF',   # 背景色
-    'text': '#333333',         # 主文本色
     'text_secondary': '#666666'  # 次要文本色
 }
 
@@ -52,40 +53,64 @@ QProgressBar::chunk {
 # 输入框和下拉框通用样式
 INPUT_STYLE = """
 QLineEdit, QTextEdit, QComboBox {
-    border: 1px solid #E0E0E0;
-    border-radius: 6px;
-    padding: 8px;
+    border: 1px solid #DDDDDD;  /* 默认细边框，使用柔和的浅灰色 */
+    border-radius: 6px;         /* 更大的圆角，更现代的感觉 */
+    padding: 4px 8px;
     background-color: white;
+    color: #333333;
 }
-QLineEdit:focus, QTextEdit:focus, QComboBox:focus {
-    border: 2px solid #666666;
+
+QTextEdit:focus {              /* 只修改 QTextEdit 的焦点状态 */
+    border: 2px solid #999999; /* 焦点时粗边框，使用更深的灰色 */
+    padding: 3px 7px;         /* 减少1px内边距补偿边框增加的1px */
 }
+
+QLineEdit:focus, QComboBox:focus {  /* 保持其他输入框的原有样式 */
+    border: 1px solid #666666;
+}
+
+QComboBox {
+    min-height: 20px;
+}
+
 QComboBox::drop-down {
     border: none;
     width: 20px;
 }
+
 QComboBox::down-arrow {
-    border: none;
-    background: none;
-    color: #666666;
+    image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAiIGhlaWdodD0iNiIgdmlld0JveD0iMCAwIDEwIDYiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgMUw1IDVMOSAxIiBzdHJva2U9IiM2NjY2NjYiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=);
+    width: 10px;
+    height: 6px;
 }
+
 QComboBox:hover {
-    background-color: #F5F5F5;
+    border: 1px solid #999999;
 }
+
 QComboBox QAbstractItemView {
     border: 1px solid #E0E0E0;
-    border-radius: 6px;
-    background-color: white;
-    selection-background-color: #F5F5F5;
-    selection-color: #333333;
-    padding: 4px;
-}
-QComboBox QAbstractItemView::item {
-    padding: 6px;
     border-radius: 4px;
+    background-color: white;
+    padding: 2px;
 }
+
+QComboBox QAbstractItemView::item {
+    height: 24px;
+    padding-left: 8px;
+    padding-right: 8px;
+    border: none;
+    color: #333333;
+}
+
 QComboBox QAbstractItemView::item:hover {
-    background-color: #F5F5F5;
+    background-color: #EBEBEB;
+    color: #333333;
+}
+
+QComboBox QAbstractItemView::item:selected {
+    background-color: #E8E8E8;
+    color: #333333;
 }
 """
 
@@ -134,7 +159,7 @@ QScrollArea {
 LABEL_STYLE = """
 QLabel {
     color: #333333;
-    padding: 2px;
+    padding: 0px 2px;
 }
 """
 
@@ -229,4 +254,18 @@ QPushButton:hover {
 QPushButton:pressed {
     background-color: #E0E0E0;
 }
+"""
+
+# 复选框样式 - 极简风格
+CHECKBOX_STYLE = """
+    QCheckBox {
+        color: #333333;
+        spacing: 5px;
+        font-size: 13px;
+    }
+    QCheckBox::indicator {
+        width: 0px;
+        height: 0px;
+        background-color: transparent;
+    }
 """ 

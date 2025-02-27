@@ -337,8 +337,8 @@ class AdvancedModeWidget(QWidget):
         # 任务信息
         info_layout = QHBoxLayout()
         task_label = QLabel(f"任务 {task_id}:")
-        title_label = QLabel("等待获取标题...")
-        title_label.setStyleSheet("color: gray;")
+        title_label = QLabel("正在获取视频信息...")
+        title_label.setStyleSheet("color: #333333;")
         title_label.setWordWrap(True)
         
         info_layout.addWidget(task_label)
@@ -350,11 +350,23 @@ class AdvancedModeWidget(QWidget):
         progress_bar = QProgressBar()
         progress_bar.setMinimum(0)
         progress_bar.setMaximum(100)
-        progress_bar.setTextVisible(True)
-        progress_bar.setFixedHeight(10)
+        progress_bar.setTextVisible(False)  # 不显示百分比文字
+        progress_bar.setFixedHeight(4)  # 降低进度条高度使其更加简洁
+        # 设置统一的进度条样式
+        progress_bar.setStyleSheet("""
+            QProgressBar {
+                border: none;
+                background-color: #f0f0f0;
+                border-radius: 2px;
+            }
+            QProgressBar::chunk {
+                background-color: #4CAF50;
+                border-radius: 2px;
+            }
+        """)
         
         status_label = QLabel("准备下载...")
-        status_label.setStyleSheet("color: #666; font-size: 12px;")
+        status_label.setStyleSheet("color: #666666; font-size: 12px;")
         
         progress_layout.addWidget(progress_bar)
         progress_layout.addWidget(status_label)
@@ -377,10 +389,22 @@ class AdvancedModeWidget(QWidget):
             
         task = self.download_tasks[task_id]
         
-        if "开始下载:" in text:
-            title = text.split(': ', 1)[1]
+        # 检查是否包含视频标题信息
+        if "单视频任务" in text and "：" in text:
+            # 从输出中提取实际标题
+            title = text.split("：", 1)[1].strip()
             task['title_label'].setText(title)
+            task['title_label'].setStyleSheet("color: #333333;")
             task['status_label'].setText("准备下载...")
+            return
+            
+        if "列表任务" in text and "：" in text:
+            # 从输出中提取实际标题
+            parts = text.split("：")
+            if len(parts) >= 3:  # 确保有足够的部分（任务信息：进度信息：标题）
+                title = parts[-1].strip()
+                task['title_label'].setText(title)
+                task['title_label'].setStyleSheet("color: #333333;")
             return
             
         if "下载进度:" in text:
@@ -401,8 +425,21 @@ class AdvancedModeWidget(QWidget):
         
         if success:
             task['progress_bar'].setValue(100)
+            task['title_label'].setText(title)  # 确保显示最终的标题
+            task['title_label'].setStyleSheet("color: #333333;")
             task['status_label'].setText("下载完成")
-            task['progress_bar'].setStyleSheet("QProgressBar::chunk { background-color: #32CD32; }")
+            # 保持统一的进度条样式
+            task['progress_bar'].setStyleSheet("""
+                QProgressBar {
+                    border: none;
+                    background-color: #f0f0f0;
+                    border-radius: 2px;
+                }
+                QProgressBar::chunk {
+                    background-color: #4CAF50;
+                    border-radius: 2px;
+                }
+            """)
             
             # 添加到下载历史
             if '已存在' in message:
@@ -419,7 +456,17 @@ class AdvancedModeWidget(QWidget):
             self.config.save_config()
         else:
             task['status_label'].setText("下载失败")
-            task['progress_bar'].setStyleSheet("QProgressBar::chunk { background-color: #FF0000; }")
+            task['progress_bar'].setStyleSheet("""
+                QProgressBar {
+                    border: none;
+                    background-color: #f0f0f0;
+                    border-radius: 2px;
+                }
+                QProgressBar::chunk {
+                    background-color: #ff5252;
+                    border-radius: 2px;
+                }
+            """)
         
         # 更新完成计数
         self.completed_urls += 1
@@ -442,7 +489,7 @@ class AdvancedModeWidget(QWidget):
                         
                         # 添加到历史记录
                         title = task.get('title_label', {}).text() if task.get('title_label') else "未知视频"
-                        if not title or title == "等待获取标题...":
+                        if not title or title == "正在获取视频信息...":
                             title = "未知视频"
                             
                         self.config.config['download_history'].append({

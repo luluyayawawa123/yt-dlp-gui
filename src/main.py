@@ -14,7 +14,7 @@ def main():
     
     # 设置应用程序信息
     app.setApplicationName("YT-DLP GUI")
-    app.setApplicationVersion("1.0.1")
+    app.setApplicationVersion("1.0.2")
     
     window = MainWindow()
     window.show()
