@@ -49,7 +49,7 @@ YT-DLP GUI 是一款简单易用的 YouTube 视频下载工具，为命令行工
    ```
 
 2. 获取最新稳定版：
-   - 前往 [Releases 页面](https://github.com/luluyayawawa123/yt-dlp-gui/releases/latest) 下载 `YT-DLP-GUI-macOS-v*.zip`
+   - 前往 [Releases 页面](https://github.com/luluyayawawa123/yt-dlp-gui/releases/latest) 下载 `YT-DLP-GUI.zip`
    - 解压后将 `YT-DLP GUI.app` 拖放到 `应用程序` 文件夹
 
 3. 首次运行：
