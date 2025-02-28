@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, 
                             QLabel, QPushButton, QTextEdit, 
-                            QComboBox, QRadioButton, QButtonGroup, QLineEdit, QScrollArea, QProgressBar)
+                            QComboBox, QRadioButton, QButtonGroup, QLineEdit, QScrollArea, QProgressBar, QCheckBox)
 from PyQt6.QtCore import pyqtSignal, Qt, QThread
 from PyQt6.QtGui import QFont, QTextCursor
 from core.downloader import Downloader
@@ -109,12 +109,66 @@ class AdvancedModeWidget(QWidget):
         format_layout.addWidget(self.audio_format)
         layout.addLayout(format_layout)
         
+        # 重新排列 - 创建一个水平布局来包含浏览器选择和字幕选项
+        options_layout = QHBoxLayout()
+        options_layout.setContentsMargins(0, 0, 0, 0)
+        options_layout.setSpacing(15)  # 调整整体间距
+        
         # 浏览器选择
         browser_layout = QHBoxLayout()
-        browser_label = QLabel("使用浏览器 Cookies:")
+        browser_layout.setSpacing(8)
+        browser_label = QLabel("浏览器:")
         browser_label.setStyleSheet(LABEL_STYLE)
+        browser_label.setFixedWidth(45)
         self.browser_combo = QComboBox()
-        self.browser_combo.setStyleSheet(INPUT_STYLE)
+        self.browser_combo.setFixedWidth(110)  # 增加下拉菜单宽度，确保文字完整显示
+        # 设置更现代的下拉菜单样式
+        self.browser_combo.setStyleSheet("""
+            QComboBox {
+                border: 1px solid #DDDDDD;
+                border-radius: 6px;
+                padding: 4px 8px;
+                background-color: white;
+                color: #333333;
+                min-height: 20px;
+            }
+            QComboBox:hover {
+                border: 1px solid #999999;
+            }
+            QComboBox:focus {
+                border: 1px solid #666666;
+            }
+            QComboBox::drop-down {
+                border: none;
+                width: 20px;
+            }
+            QComboBox::down-arrow {
+                image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAiIGhlaWdodD0iNiIgdmlld0JveD0iMCAwIDEwIDYiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgMUw1IDVMOSAxIiBzdHJva2U9IiM2NjY2NjYiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=);
+                width: 10px;
+                height: 6px;
+            }
+            QComboBox QAbstractItemView {
+                border: 1px solid #E0E0E0;
+                border-radius: 4px;
+                background-color: white;
+                padding: 2px;
+            }
+            QComboBox QAbstractItemView::item {
+                height: 24px;
+                padding-left: 8px;
+                padding-right: 8px;
+                border: none;
+                color: #333333;
+            }
+            QComboBox QAbstractItemView::item:hover {
+                background-color: #EBEBEB;
+                color: #333333;
+            }
+            QComboBox QAbstractItemView::item:selected {
+                background-color: #E8E8E8;
+                color: #333333;
+            }
+        """)
         
         # 添加浏览器选项
         if sys.platform == 'darwin':
@@ -138,10 +192,27 @@ class AdvancedModeWidget(QWidget):
             index = self.browser_combo.findData(saved_browser)
             if index >= 0:
                 self.browser_combo.setCurrentIndex(index)
-                
+        
         browser_layout.addWidget(browser_label)
         browser_layout.addWidget(self.browser_combo)
-        layout.addLayout(browser_layout)
+        
+        # 添加字幕选项复选框 - 恢复原始样式
+        self.subtitle_checkbox = QCheckBox()
+        self.subtitle_checkbox.setText("下载字幕")
+        self.subtitle_checkbox.setStyleSheet("""
+            QCheckBox {
+                color: #333333;
+                padding: 0px 2px;
+            }
+        """)
+        self.subtitle_checkbox.setToolTip("下载视频内置的所有非自动生成字幕(格式:SRT)\n不包含自动生成的字幕")
+        self.subtitle_checkbox.stateChanged.connect(self.update_subtitle_checkbox_text)
+        
+        # 合并布局 - 减少间距
+        options_layout.addLayout(browser_layout)
+        options_layout.addWidget(self.subtitle_checkbox)
+        options_layout.addStretch()
+        layout.addLayout(options_layout)
         
         # 提示信息
         browser_tip = QLabel("提示：请确保已在选择的浏览器中登录过 YouTube")
@@ -262,7 +333,8 @@ class AdvancedModeWidget(QWidget):
         # 准备下载选项
         format_options = {
             'format': format_str,
-            'browser': self.browser_combo.currentData()
+            'browser': self.browser_combo.currentData(),
+            'download_subs': self.subtitle_checkbox.isChecked()  # 添加字幕下载选项
         }
         
         # 使用配置中的下载路径
@@ -312,10 +384,13 @@ class AdvancedModeWidget(QWidget):
         self.audio_format.setEnabled(True)
         self.analyze_button.setEnabled(True)
         self.browser_combo.setEnabled(True)
+        self.subtitle_checkbox.setEnabled(True)  # 启用字幕复选框
         self.download_button.setEnabled(True)
         self.download_button.setText("开始下载")
 
     def switch_to_basic_mode(self):
+        # 在切换模式前保存当前的浏览器设置
+        self.save_browser_setting()
         # 发送信号给主窗口
         self.mode_switch_requested.emit() 
 
@@ -326,6 +401,7 @@ class AdvancedModeWidget(QWidget):
         self.audio_format.setEnabled(False)
         self.analyze_button.setEnabled(False)
         self.browser_combo.setEnabled(False)
+        self.subtitle_checkbox.setEnabled(False)  # 禁用字幕复选框
 
     def create_download_progress_widget(self, task_id, url):
         """为下载任务创建进度显示组件"""
@@ -513,3 +589,10 @@ class AdvancedModeWidget(QWidget):
             self.download_button.setText("开始下载")
             self.download_button.clicked.disconnect()
             self.download_button.clicked.connect(self.start_download) 
+
+    def update_subtitle_checkbox_text(self, state):
+        """更新字幕复选框的文本，添加状态标识"""
+        if state == Qt.CheckState.Checked:
+            self.subtitle_checkbox.setText("☑️ 下载字幕")
+        else:
+            self.subtitle_checkbox.setText("下载字幕") 

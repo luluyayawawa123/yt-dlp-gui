@@ -168,7 +168,8 @@ class MainWindow(QMainWindow):
         path_label.setStyleSheet(LABEL_STYLE)
         self.path_input = QLineEdit()
         self.path_input.setStyleSheet(INPUT_STYLE)
-        self.path_input.setText(os.path.expanduser("~/Downloads"))
+        # 优先使用配置中保存的下载路径，如果没有则使用默认路径
+        self.path_input.setText(self.config.config.get('last_download_path', os.path.expanduser("~/Downloads")))
         self.browse_button = QPushButton("浏览...")
         self.browse_button.setStyleSheet(BROWSE_BUTTON_STYLE)
         self.browse_button.clicked.connect(self.browse_directory)
@@ -335,8 +336,8 @@ class MainWindow(QMainWindow):
             
             # 截断过长的标题
             truncated_title = full_title
-            if len(full_title) > 35:  # 限制标题长度为35个字符
-                truncated_title = full_title[:33] + "..."
+            if len(full_title) > 45:  # 将标题长度限制从35增加到60个字符
+                truncated_title = full_title[:43] + "..."
             
             # 创建可点击的标题标签
             title_label = QPushButton(truncated_title)
@@ -403,15 +404,16 @@ class MainWindow(QMainWindow):
             # 状态标签样式
             status_label = QLabel(entry['status'])
             status_style = """
-                color: #32CD32;
+                color: white;
+                background-color: #4CAF50;
                 padding: 1px 6px;
-                border-radius: 2px;
-                font-size: 12px;  /* 从 11px 改为 12px */
+                border-radius: 4px;
+                font-size: 12px;
             """
             if entry['status'] == '已取消':
-                status_style = status_style.replace('#32CD32', '#999999')
+                status_style = status_style.replace('#4CAF50', '#9E9E9E')
             elif entry['status'] == '已存在':
-                status_style = status_style.replace('#32CD32', '#FFA500')
+                status_style = status_style.replace('#4CAF50', '#FF9800')
             status_label.setStyleSheet(status_style)
             status_label.setFixedWidth(55)  # 稍微减小宽度
             status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -433,6 +435,9 @@ class MainWindow(QMainWindow):
         )
         if directory:
             self.path_input.setText(directory)
+            # 立即保存下载路径到配置
+            self.config.config['last_download_path'] = directory
+            self.config.save_config()
             
     def validate_url(self, url):
         """验证 URL 是否是有效的 YouTube 链接"""
@@ -908,6 +913,8 @@ class MainWindow(QMainWindow):
             })
         elif success:
             task['progress_bar'].setValue(100)
+            # 更新任务标题为最终的列表/视频标题
+            task['title_label'].setText(title)
             task['progress_bar'].setTextVisible(False)  # 完成后不显示百分比
             task['status_label'].setText("下载完成")
             task['progress_bar'].setStyleSheet("""
@@ -1013,6 +1020,9 @@ class MainWindow(QMainWindow):
                 self.current_mode_widget.parent().layout().removeWidget(self.current_mode_widget)
             
             QApplication.processEvents()
+            # 确保在切换模式前已保存最新的配置
+            self.config.save_config()
+            # 创建基础模式
             self.create_basic_mode()
             self.advanced_button.setText("高级模式")
             

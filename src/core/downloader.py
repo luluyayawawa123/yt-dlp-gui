@@ -117,6 +117,20 @@ class Downloader(QObject):
                     format_str = "bv*[height<=480][ext=mp4]+ba[ext=m4a]"
                     args.extend(["-f", format_str])
             
+            # 添加自定义格式参数（高级模式）
+            if format_options and 'format' in format_options:
+                # 避免与上面的height参数冲突，如果两者都存在，format参数优先
+                # 从args列表中移除之前可能添加的-f参数
+                if '-f' in args:
+                    f_index = args.index('-f')
+                    if f_index < len(args) - 1:  # 确保后面有值
+                        args.pop(f_index + 1)  # 移除格式值
+                        args.pop(f_index)  # 移除-f参数
+                
+                # 添加自定义格式参数
+                args.extend(['-f', format_options['format']])
+                self.config.log(f"使用自定义格式: {format_options['format']}", logging.INFO)
+            
             # 添加字幕下载参数
             if format_options and format_options.get('download_subs'):
                 args.extend([
