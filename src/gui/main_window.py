@@ -102,10 +102,16 @@ class MainWindow(QMainWindow):
             # 初始化新UI
             self.init_ui()
             
-            # 安全地恢复设置
+            # 安全地恢复设置 - 优先使用配置中保存的下载路径
             try:
-                if current_settings['path']:
+                # 首先检查配置中是否有保存的下载路径
+                if 'last_download_path' in self.config.config and self.config.config['last_download_path']:
+                    self.path_input.setText(self.config.config['last_download_path'])
+                # 如果没有，再尝试使用当前设置
+                elif current_settings['path']:
                     self.path_input.setText(current_settings['path'])
+                    
+                # 恢复浏览器设置
                 if current_settings['browser']:
                     index = self.browser_combo.findData(current_settings['browser'])
                     if index >= 0:
@@ -168,8 +174,7 @@ class MainWindow(QMainWindow):
         path_label.setStyleSheet(LABEL_STYLE)
         self.path_input = QLineEdit()
         self.path_input.setStyleSheet(INPUT_STYLE)
-        # 优先使用配置中保存的下载路径，如果没有则使用默认路径
-        self.path_input.setText(self.config.config.get('last_download_path', os.path.expanduser("~/Downloads")))
+        self.path_input.setText(os.path.expanduser("~/Downloads"))
         self.browse_button = QPushButton("浏览...")
         self.browse_button.setStyleSheet(BROWSE_BUTTON_STYLE)
         self.browse_button.clicked.connect(self.browse_directory)
@@ -336,8 +341,8 @@ class MainWindow(QMainWindow):
             
             # 截断过长的标题
             truncated_title = full_title
-            if len(full_title) > 45:  # 将标题长度限制从35增加到60个字符
-                truncated_title = full_title[:43] + "..."
+            if len(full_title) > 40:  # 将标题长度限制从35增加到60个字符
+                truncated_title = full_title[:38] + "..."
             
             # 创建可点击的标题标签
             title_label = QPushButton(truncated_title)
@@ -983,6 +988,11 @@ class MainWindow(QMainWindow):
                 QMessageBox.warning(self, "警告", "下载进行中，请等待下载完成后再切换模式")
                 return
             
+            # 切换到高级模式前保存浏览器设置和下载路径
+            self.save_browser_setting()
+            self.config.config['last_download_path'] = self.path_input.text()
+            self.config.save_config()
+            
             # 切换到高级模式
             if self.current_mode_widget:
                 self.current_mode_widget.hide()
@@ -1180,3 +1190,21 @@ class MainWindow(QMainWindow):
             self.subtitle_checkbox.setText("☑️ 下载字幕")
         else:
             self.subtitle_checkbox.setText("下载字幕") 
+
+    def closeEvent(self, event):
+        """在应用关闭前保存所有设置"""
+        try:
+            # 保存浏览器设置
+            if hasattr(self, 'browser_combo') and self.browser_combo:
+                self.save_browser_setting()
+                
+            # 保存下载路径
+            if hasattr(self, 'path_input') and self.path_input:
+                self.config.config['last_download_path'] = self.path_input.text()
+                
+            # 保存配置
+            self.config.save_config()
+        except Exception as e:
+            print(f"保存设置时出错: {str(e)}")
+            
+        event.accept() 

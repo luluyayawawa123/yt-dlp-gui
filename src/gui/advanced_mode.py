@@ -333,12 +333,15 @@ class AdvancedModeWidget(QWidget):
         # 准备下载选项
         format_options = {
             'format': format_str,
-            'browser': self.browser_combo.currentData(),
+            'browser': self.browser_combo.currentData(),  # 确保正确获取浏览器选择
             'download_subs': self.subtitle_checkbox.isChecked()  # 添加字幕下载选项
         }
         
         # 使用配置中的下载路径
         output_path = self.config.config['last_download_path']
+        
+        # 保存浏览器选择到配置
+        self.save_browser_setting()
         
         # 重置下载器状态
         self.downloader.reset_state()
@@ -391,6 +394,8 @@ class AdvancedModeWidget(QWidget):
     def switch_to_basic_mode(self):
         # 在切换模式前保存当前的浏览器设置
         self.save_browser_setting()
+        # 确保下载位置也被保存（last_download_path已经在配置中了，只需确保保存配置）
+        self.config.save_config()
         # 发送信号给主窗口
         self.mode_switch_requested.emit() 
 

@@ -51,6 +51,10 @@ class Downloader(QObject):
             version = process.readAllStandardOutput().data().decode().strip()
             self.config.log(f"yt-dlp 版本: {version}", logging.DEBUG)
             
+            # 从format_options中获取浏览器设置，如果存在的话
+            if format_options and 'browser' in format_options:
+                browser = format_options['browser']
+            
             # 检查浏览器 cookies
             if browser == 'safari':
                 cookies_path = os.path.expanduser("~/Library/Containers/com.apple.Safari/Data/Library/Cookies/Cookies.binarycookies")
