@@ -97,6 +97,29 @@ YT-DLP GUI 是一款简单易用的 YouTube 视频下载工具，为命令行工
    - 确保已安装全部依赖
    - 尝试右键点击选择"打开"
 
+4. **下载失败/报错（比如无法解析、403、No formats found 等）**
+   - 可能原因：YouTube 会不定期升级和调整页面/接口，导致旧版本的 yt-dlp 无法适配。
+   - 建议优先更新依赖（通过 Homebrew）：
+     ```bash
+     # 更新 Homebrew 索引
+     brew update
+
+     # 升级 yt-dlp 和 ffmpeg 到最新稳定版
+     brew upgrade yt-dlp ffmpeg
+
+     # 若仍有问题可尝试重装
+     brew reinstall yt-dlp ffmpeg
+
+     # 验证版本
+     yt-dlp --version
+     ffmpeg -version | head -n 1
+     ```
+   - 说明：若是通过 Homebrew 安装的 yt-dlp，不建议使用 `yt-dlp -U` 自更新，请使用上面的 `brew update/upgrade`。
+   - 若更新后仍失败：
+     - 可能是上游规则仍在修复中，可稍后再试。
+     - 尝试更换网络或代理环境，排除本地网络限制。
+     - 在高级模式中查看详细日志，便于定位问题。
+
 ## 调试
 - 日志路径：`~/Library/Application Support/YT-DLP-GUI/debug.log`
 - 包含：

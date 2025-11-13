@@ -17,7 +17,16 @@ from .styles import *  # 导入样式
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("YT-DLP GUI")
+        # 获取应用版本号；如果没有则设置一个默认版本
+        app = QApplication.instance()
+        version = app.applicationVersion() if app else ""
+        if not version:
+            version = "1.0.0"
+            if app:
+                app.setApplicationVersion(version)
+
+        # 在窗口标题中显示版本号
+        self.setWindowTitle(f"YT-DLP GUI v{version}")
         self.setMinimumSize(800, 752)  # 增加 60 像素高度
         # 设置窗口背景色
         self.setStyleSheet(f"background-color: {COLORS['background']};")

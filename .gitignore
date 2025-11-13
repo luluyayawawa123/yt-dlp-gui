@@ -10,6 +10,7 @@ __pycache__/
 build/
 dist/
 *.spec
+.pyinstaller/
 
 # 编辑器配置
 .vscode/

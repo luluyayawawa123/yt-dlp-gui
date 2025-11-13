@@ -1,6 +1,7 @@
 import sys
 import os
 from PyQt6.QtWidgets import QApplication
+from version import VERSION
 from gui.main_window import MainWindow
 
 def main():
@@ -14,7 +15,7 @@ def main():
     
     # 设置应用程序信息
     app.setApplicationName("YT-DLP GUI")
-    app.setApplicationVersion("1.0.3")
+    app.setApplicationVersion(VERSION or "1.0.0")
     
     window = MainWindow()
     window.show()
