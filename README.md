@@ -18,8 +18,6 @@ YT-DLP GUI 是一款简单易用的 YouTube 下载器，为命令行工具 `yt-d
 
 1) 系统要求与依赖
 - macOS 10.15 或更高；支持 Intel 与 Apple Silicon (M 系列)
-- 需通过 Homebrew 安装：`yt-dlp`（下载核心）、`ffmpeg`（音视频处理）
-- 建议保持 `yt-dlp/ffmpeg` 为最新，以适配 YouTube 的变化
 
 2) 安装应用（推荐：DMG 安装）
 - 打开 <a href="https://github.com/luluyayawawa123/yt-dlp-gui/releases" target="_blank" rel="noopener noreferrer">Releases 页面</a>，下载 DMG：`YT-DLP-GUI-mac-v*.dmg`
