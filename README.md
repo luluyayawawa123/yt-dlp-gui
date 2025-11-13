@@ -22,18 +22,18 @@ YT-DLP GUI 是一款简单易用的 YouTube 下载器，为命令行工具 `yt-d
 - 建议保持 `yt-dlp/ffmpeg` 为最新，以适配 YouTube 的变化
 
 2) 安装应用（推荐：DMG 安装）
-- 打开 <a href="https://github.com/luluyayawawa123/yt-dlp-gui/releases" target="_blank" rel="noopener noreferrer">Releases 页面</a>，优先下载 DMG：`YT-DLP-GUI-mac-v*.dmg`
+- 打开 <a href="https://github.com/luluyayawawa123/yt-dlp-gui/releases" target="_blank" rel="noopener noreferrer">Releases 页面</a>，下载 DMG：`YT-DLP-GUI-mac-v*.dmg`
 - 双击打开 DMG，将“YT-DLP GUI”拖拽到“应用程序（Applications）”文件夹完成安装（DMG 窗口通常自带 Applications 快捷方式，把图标拖到那个文件夹图标上即可）
 - 备用方式：如需 ZIP，可下载 `YT-DLP-GUI-mac-v*.zip`，解压后将“YT-DLP GUI”拖入“应用程序（Applications）”文件夹
 
-3) 首次运行（安全与权限）
-- 由于来自未公证开发者，首次运行可能被系统拦截：
-  - 打开“系统设置（System Settings）” → “隐私与安全性（Privacy & Security）” → 在“安全性”中找到被拦截的“YT-DLP GUI”，点击“仍要打开（Open Anyway）”
-  - 或右键“YT-DLP GUI”选择“打开（Open）”
+3) 首次运行
+- 由于来自未公证开发者，首次运行时会被系统拦截：
+  - 打开“系统设置” → “隐私与安全性” → 在“安全性”中找到被拦截的“YT-DLP GUI”，点击“仍要打开”
+  - 或右键“YT-DLP GUI”选择“打开”
 - 首次使用会请求“完全磁盘访问”以读取浏览器 cookies 并保存下载文件：打开“系统设置” → “隐私与安全性” → “完全磁盘访问”，添加并开启本应用后重启应用
 - <span style="color:red">重要提醒：</span>本应用在 Intel Mac 上开发，M 系列 Mac 运行时可能需要 Rosetta 翻译，首次或每次启动可能需等待约 10 秒，请耐心等待
 
-4) 准备依赖（Homebrew）
+4) 安装必要的依赖（很重要！！）
 ```bash
 # 安装 Homebrew（若尚未安装）
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -52,13 +52,13 @@ ffmpeg -version | head -n 1
 ## 使用说明
 
 基础模式（推荐）
-1. 打开应用，在“浏览器”处选择 cookies 来源：Safari（默认）/Chrome/Edge
-   - 必须先在所选浏览器中登录 YouTube 账号（下载会员/受限视频需要登录）
+1. 打开应用，在“浏览器”处选择 cookies 来源：Safari（推荐）/Chrome/Edge
+   - 必须先在所选浏览器中登录 YouTube 账号（下载视频需要登录）
 2. 将一个或多个 YouTube 视频/播放列表/频道链接粘贴到输入框（每行一个）
 3. 选择下载目录
-4. 画质选择：保持“最高画质”即可下载可用的最高分辨率（可达 4K/8K）；若仅需音频请选择“MP3”
-5. 如需字幕，勾选“下载字幕”（自动转换为 SRT）
-6. 点击“开始下载”，在下方查看实时进度；下载完成后可一键打开文件或所在文件夹
+4. 画质选择：保持“最高画质”即可下载可用的最高分辨率（可达 4K/8K）；也可以选择 1080P、480P 画质；若仅需音频请选择“仅MP3音频”
+5. 如需下载字幕，勾选“下载字幕”（自动转换为 SRT）。只会下载视频博主上传的高质量字幕，不会下载 YouTube 系统自动生成的低质量字幕
+6. 点击“开始下载”，在下方查看实时进度；下载完成后可以在下载历史列表中通过右键——打开文件或所在文件夹或直接打开视频。
 
 高级模式（可选）
 - 先点击“分析格式”，查看可用的视频/音频编码与清晰度
