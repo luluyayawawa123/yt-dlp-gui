@@ -22,7 +22,7 @@ YT-DLP GUI 是一款简单易用的 YouTube 下载器，为命令行工具 `yt-d
 - 建议保持 `yt-dlp/ffmpeg` 为最新，以适配 YouTube 的变化
 
 2) 安装应用（推荐：DMG 安装）
-- 打开 Releases 页面，优先下载 DMG：`YT-DLP-GUI-mac-v*.dmg`
+- 打开 <a href="https://github.com/luluyayawawa123/yt-dlp-gui/releases" target="_blank" rel="noopener noreferrer">Releases 页面</a>，优先下载 DMG：`YT-DLP-GUI-mac-v*.dmg`
 - 双击打开 DMG，将 `YT-DLP GUI.app` 拖拽到 `应用程序` 文件夹完成安装
 - 备用方式：如需 ZIP，可下载 `YT-DLP-GUI-mac-v*.zip`，解压后将 `.app` 拖入 `应用程序`
 
