@@ -23,13 +23,13 @@ YT-DLP GUI 是一款简单易用的 YouTube 下载器，为命令行工具 `yt-d
 
 2) 安装应用（推荐：DMG 安装）
 - 打开 <a href="https://github.com/luluyayawawa123/yt-dlp-gui/releases" target="_blank" rel="noopener noreferrer">Releases 页面</a>，优先下载 DMG：`YT-DLP-GUI-mac-v*.dmg`
-- 双击打开 DMG，将 `YT-DLP GUI.app` 拖拽到 `应用程序` 文件夹完成安装
-- 备用方式：如需 ZIP，可下载 `YT-DLP-GUI-mac-v*.zip`，解压后将 `.app` 拖入 `应用程序`
+- 双击打开 DMG，将“YT-DLP GUI”拖拽到“应用程序（Applications）”文件夹完成安装（DMG 窗口通常自带 Applications 快捷方式，把图标拖到那个文件夹图标上即可）
+- 备用方式：如需 ZIP，可下载 `YT-DLP-GUI-mac-v*.zip`，解压后将“YT-DLP GUI”拖入“应用程序（Applications）”文件夹；多数电脑默认不显示扩展名，看不到“.app”是正常的
 
 3) 首次运行（安全与权限）
 - 由于来自未公证开发者，首次运行可能被系统拦截：
-  - 打开“系统设置” → “隐私与安全性” → 在“安全性”中找到被拦截的 `YT-DLP GUI`，点击“仍要打开”
-  - 或右键 `.app` 选择“打开”
+  - 打开“系统设置（System Settings）” → “隐私与安全性（Privacy & Security）” → 在“安全性”中找到被拦截的“YT-DLP GUI”，点击“仍要打开（Open Anyway）”
+  - 或右键“YT-DLP GUI”选择“打开（Open）”
 - 首次使用会请求“完全磁盘访问”以读取浏览器 cookies 并保存下载文件：打开“系统设置” → “隐私与安全性” → “完全磁盘访问”，添加并开启本应用后重启应用
 - <span style="color:red">重要提醒：</span>本应用在 Intel Mac 上开发，M 系列 Mac 运行时可能需要 Rosetta 翻译，首次或每次启动可能需等待约 10 秒，请耐心等待
 
